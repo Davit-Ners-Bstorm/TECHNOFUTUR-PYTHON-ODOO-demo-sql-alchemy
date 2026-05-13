@@ -516,6 +516,15 @@ with SessionLocal() as session:
 
 ## 19. Read avec relation
 
+Il y a deux choses importantes à distinguer :
+
+- `join()` ajoute une jointure dans la requête SQL.
+- `joinedload()` demande à SQLAlchemy de charger directement la relation dans les objets ORM.
+
+Ces deux outils ne font pas exactement la même chose.
+
+### Utiliser `join()`
+
 ```python
 def get_by_id_with_profil(session: Session, id):
     stmt = select(Users).join(Users.profil).where(Users.id == id)
@@ -529,7 +538,19 @@ Ici, on utilise un `join`.
 join(Users.profil)
 ```
 
-Cela permet de chercher un utilisateur qui a un profil associé. Le `join()` filtre les utilisateurs pour garder seulement ceux qui ont un profil.
+Cela permet de chercher un utilisateur qui a un profil associé.
+
+Le `join()` est utilisé dans la requête SQL. Il sert ici à filtrer les utilisateurs pour garder seulement ceux qui ont un profil.
+
+Par contre, le `join()` ne veut pas dire que la relation `user.profil` est déjà chargée dans l'objet Python retourné par l'ORM.
+
+Si on accède ensuite à la relation :
+
+```python
+print(user.profil)
+```
+
+SQLAlchemy peut faire une requête SQL supplémentaire pour charger le profil. C'est le comportement de chargement paresseux, appelé lazy loading.
 
 Équivalent SQL simplifié :
 
@@ -539,6 +560,50 @@ FROM users
 JOIN profiles ON users.id = profiles.user_id
 WHERE users.id = 1;
 ```
+
+### Utiliser `joinedload()`
+
+Si on veut que la relation soit directement chargée en mémoire avec l'utilisateur, on utilise `options(joinedload(...))`.
+
+```python
+from sqlalchemy.orm import joinedload
+
+def get_by_id_with_profil_loaded(session: Session, id):
+    stmt = (
+        select(Users)
+        .options(joinedload(Users.profil))
+        .where(Users.id == id)
+    )
+
+    return session.execute(stmt).scalar_one_or_none()
+```
+
+Ici, SQLAlchemy retourne un objet `Users` avec sa relation `profil` déjà chargée.
+
+Donc, quand on fait :
+
+```python
+print(user.profil)
+```
+
+SQLAlchemy n'a pas besoin de refaire une requête SQL uniquement pour récupérer le profil.
+
+On peut aussi charger tous les utilisateurs avec leur profil :
+
+```python
+def get_all_users_with_profil(session: Session):
+    stmt = (
+        select(Users)
+        .options(joinedload(Users.profil))
+    )
+
+    return session.execute(stmt).scalars().all()
+```
+
+Résumé :
+
+- `join()` : utile pour construire la requête SQL, filtrer ou trier sur une relation.
+- `joinedload()` : utile pour charger la relation dans les objets ORM dès la première requête.
 
 ---
 

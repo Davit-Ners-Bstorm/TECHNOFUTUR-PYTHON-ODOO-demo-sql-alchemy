@@ -34,4 +34,4 @@ class Users(Base):
     )
 
     def __repr__(self):
-        return f'User : ID : {self.id} USERNAME : {self.username} EMAIL : {self.email} COUNTRY : {self.country} PROFIL : {self.profil}'
+        return f'User : ID : {self.id} USERNAME : {self.username} EMAIL : {self.email} COUNTRY : {self.country}'
