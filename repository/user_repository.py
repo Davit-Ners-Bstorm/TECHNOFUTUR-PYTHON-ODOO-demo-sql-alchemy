@@ -24,6 +24,9 @@ def get_all_users(session: Session):
 
     return users
 
+# Retourne tous les users avec les profiles déjà chargés en mémoire
+# grâce à joinedload().
+# Quand on accède à user.profil, aucune requête SQL supplémentaire n'est faite.
 def get_all_users_with_profil(session: Session):
     stmt = (
         select(Users)
@@ -34,6 +37,10 @@ def get_all_users_with_profil(session: Session):
 
     return users
 
+# Le JOIN est utilisé dans la requête SQL,
+# mais la relation profil n'est pas automatiquement hydratée dans les objets ORM.
+# Quand on accède à user.profil, SQLAlchemy peut refaire des requêtes supplémentaires
+# (lazy loading).
 def get_all_users_with_profil_autre(session: Session):
     stmt = (
         select(Users)

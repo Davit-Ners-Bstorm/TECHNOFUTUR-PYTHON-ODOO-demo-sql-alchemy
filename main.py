@@ -10,6 +10,10 @@ Base.metadata.create_all(engine)
 SessionLocal = sessionmaker(bind=engine)
 
 with SessionLocal() as session:
+    # Create a user
+    # created_user = create_user(session, 'Khun', 'khun@gmail.com', 'Belgium')
+    # print(created_user)
+
     # Create a profil for an user by his user_id
     # profil = create_profil(session, 1, 'Bonjour, je suis Khun.')
     # print(profil)
